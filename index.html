@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Challan Props — Cloud (Firebase) — Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b0b; --card:#0f1011; --muted:#bdb6ac; --gold:#d4af37; --accent:#c9a941; --glass: rgba(255,255,255,0.03);
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#070707 0%, #0b0b0b 100%);margin:0;color:var(--muted);-webkit-font-smoothing:antialiased}
+  header{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;background:linear-gradient(90deg, rgba(212,175,55,0.06), rgba(201,169,65,0.02));border-bottom:1px solid rgba(212,175,55,0.06)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#b58f2a);display:flex;align-items:center;justify-content:center;color:#0b0b0b;font-weight:700;font-size:20px;box-shadow:0 6px 24px rgba(213,167,48,0.12)}
+  header h1{margin:0;font-size:18px;color:#fff;font-weight:600}
+  header p{margin:0;font-size:13px;color:var(--muted)}
+  nav{display:flex;gap:10px;align-items:center}
+  .nav-btn{background:transparent;border:1px solid rgba(212,175,55,0.12);color:var(--gold);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .container{max-width:1200px;margin:22px auto;padding:0 18px;}
+  .layout{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:16px;border:1px solid rgba(255,255,255,0.03);box-shadow: 0 8px 30px rgba(0,0,0,0.6)}
+  input, select, textarea, button{font-family:inherit}
+  input[type="text"], input[type="number"], select, textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;color:#efe6d1;outline:none;font-size:14px}
+  .btn{background:linear-gradient(180deg,var(--gold),#b58f2a);color:#071017;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600;padding:8px 12px}
+  .small{font-size:13px;color:var(--muted)}
+  .row{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;margin-top:12px;color:#efe6d1}
+  th, td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px;text-align:left}
+  th{color:#f5eecb;font-weight:600}
+  tr:hover{background:rgba(212,175,55,0.03)}
+  .actions{display:flex;gap:8px}
+  aside.preview{position:sticky;top:28px}
+  #imgPreview{width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#0b0b0b;padding:6px;display:block}
+  footer{margin-top:22px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(212,175,55,0.03);color:var(--muted)}
+  @media(max-width:980px){ .layout{grid-template-columns:1fr} aside.preview{position:relative;top:0} }
+  .auth-panel{display:flex;gap:8px;align-items:center}
+  .muted-note{color:#cbbd9a;font-size:13px}
+  .tag{background:rgba(212,175,55,0.08);padding:6px 8px;border-radius:8px;color:var(--gold);font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">SH</div>
+    <div>
+      <h1>SHRI HARI — Challan Props (Cloud)</h1>
+      <p class="small">Login to save & access data from any device. Admin can delete records.</p>
+    </div>
+  </div>
+
+  <nav>
+    <div id="userArea" class="auth-panel"></div>
+  </nav>
+</header>
+
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="folderSelect" style="padding:10px;border-radius:10px;background:transparent;color:#efe6d1;border:1px solid rgba(255,255,255,0.03)"></select>
+      <input id="newFolderInput" type="text" placeholder="New folder name (e.g. Challan-01)" style="padding:10px;border-radius:10px;color:#efe6d1;background:transparent;border:1px solid rgba(255,255,255,0.03)" />
+      <button id="btnCreateFolder" class="btn">Create</button>
+      <button id="btnDeleteFolder" class="btn ghost">Delete</button>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="small muted-note" id="connectedUser">Not connected</div>
+      <div id="adminBadge" class="small" style="color:#ffd77a;display:none">ADMIN</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700;color:#ffeeb3">Add / Edit Record</div>
+            <div class="small">You can attach local image (uploaded to Storage) or paste Google Drive link.</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button id="btnExport" class="btn ghost">Export XLSX</button>
+            <button id="btnBackup" class="btn ghost">Backup JSON</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="row">
+            <input id="inpProps" type="text" placeholder="PROPS (e.g. E-42)" />
+            <input id="inpQty" type="number" placeholder="QTY" style="width:120px"/>
+          </div>
+
+          <div class="row">
+            <input id="inpPropsRizer" type="text" placeholder="PROPS RIZER (optional)" />
+            <input id="inpRizer" type="text" placeholder="RIZER (optional)" />
+          </div>
+
+          <div class="row">
+            <input id="inpRizerQty" type="number" placeholder="RIZER QTY (optional)" style="width:160px"/>
+          </div>
+
+          <div class="row">
+            <input id="fileImg" type="file" accept="image/*" />
+            <input id="inpImageLink" type="text" placeholder="Or paste Google Drive / Image URL here" />
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:8px">
+            <button id="btnSave" class="btn">Save Record</button>
+            <button id="btnUpdate" class="btn ghost" style="display:none">Update</button>
+            <button id="btnCancel" class="btn ghost" style="display:none">Cancel</button>
+            <button id="btnClearAll" class="btn ghost">Clear Folder</button>
+          </div>
+
+          <div class="small" style="margin-top:10px">CSV/XLSX import format: <code style="color:#e9dca5">PROPS,QTY,PROPS_RIZER,RIZER,RIZER_QTY,IMAGE_LINK</code></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="search" type="text" placeholder="Search PROPS / RIZER ..." style="padding:10px;border-radius:10px;width:320px"/>
+            <select id="filterMode" style="padding:10px;border-radius:10px;background:transparent;color:#efe6d1;border:1px solid rgba(255,255,255,0.03)">
+              <option value="all">All</option>
+              <option value="withImage">With Image</option>
+              <option value="withoutImage">Without Image</option>
+            </select>
+            <label class="btn ghost" style="padding:8px 12px;cursor:pointer">
+              <input id="fileImport" type="file" accept=".xlsx,.xls,.csv" style="display:none" /> Import
+            </label>
+          </div>
+
+          <div class="small">Tip: Drive link example: <span style="color:#ffd77a">https://drive.google.com/file/d/FILE_ID/view?usp=sharing</span></div>
+        </div>
+
+        <table aria-label="records">
+          <thead><tr><th>#</th><th>PROPS</th><th>QTY</th><th>RIZER</th><th>RIZER_QTY</th><th>IMG</th><th>Actions</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="card preview">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700;color:#ffeeb3">Preview</div>
+        <div class="small" id="metaFolder">Folder: —</div>
+      </div>
+
+      <div class="small" style="margin-top:8px">Challan preview (local):</div>
+      <pre class="small">/mnt/data/4bcf8ca1-2893-4bf4-ab17-d4ef909276bc.png</pre>
+
+      <div style="margin-top:10px">
+        <img id="imgPreview" src="/mnt/data/4bcf8ca1-2893-4bf4-ab17-d4ef909276bc.png" alt="Challan preview">
+      </div>
+
+      <div id="selMeta" class="small" style="margin-top:12px">Selected: None</div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="btnOpen" class="btn ghost">Open Image</button>
+        <button id="btnDelete" class="btn ghost" style="display:none">Delete Selected</button>
+        <button id="btnAttach" class="btn ghost">Attach Image</button>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="small" style="color:#ffd77a">Admin: <strong>bhupendrapatidar1904@gmail.com</strong></div>
+        <div class="small" style="margin-top:8px">Records saved to Firebase Firestore. Images saved to Firebase Storage.</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="small">© <strong>SHRI HARI</strong> — Props Manager</div>
+    <div class="small">Cloud sync (Firebase) · Admin delete enabled</div>
+  </footer>
+</div>
+
+<!-- Firebase compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<script>
+/* ---------------------------
+  Firebase config (from user)
+---------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyB0PRAZuhC0JyNAM1d1Htjpj4RIrshw8Y0",
+  authDomain: "bhupendra-5a57e.firebaseapp.com",
+  projectId: "bhupendra-5a57e",
+  storageBucket: "bhupendra-5a57e.firebasestorage.app",
+  messagingSenderId: "138229178224",
+  appId: "1:138229178224:web:c79fb5d9bdd935775ff9b5",
+  measurementId: "G-V7BQGL8Y6T"
+};
+
+/* Initialize Firebase */
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/* Admin email */
+const ADMIN_EMAIL = 'bhupendrapatidar1904@gmail.com';
+
+/* Use collection name as confirmed */
+const COLLECTION = 'propsData';
+
+/* App state */
+let currentUser = null;
+let currentFolder = null;
+let folders = []; // user's folder list
+let records = []; // current page records (array of {id, uid, ...})
+let editingId = null;
+
+/* DOM refs */
+const userArea = document.getElementById('userArea');
+const connectedUser = document.getElementById('connectedUser');
+const adminBadge = document.getElementById('adminBadge');
+const folderSelect = document.getElementById('folderSelect');
+const newFolderInput = document.getElementById('newFolderInput');
+const btnCreateFolder = document.getElementById('btnCreateFolder');
+const btnDeleteFolder = document.getElementById('btnDeleteFolder');
+
+const inpProps = document.getElementById('inpProps');
+const inpQty = document.getElementById('inpQty');
+const inpPropsRizer = document.getElementById('inpPropsRizer');
+const inpRizer = document.getElementById('inpRizer');
+const inpRizerQty = document.getElementById('inpRizerQty');
+const fileImg = document.getElementById('fileImg');
+const inpImageLink = document.getElementById('inpImageLink');
+const btnSave = document.getElementById('btnSave');
+const btnUpdate = document.getElementById('btnUpdate');
+const btnCancel = document.getElementById('btnCancel');
+const btnClearAll = document.getElementById('btnClearAll');
+
+const tableBody = document.getElementById('tableBody');
+const search = document.getElementById('search');
+const filterMode = document.getElementById('filterMode');
+
+const imgPreview = document.getElementById('imgPreview');
+const selMeta = document.getElementById('selMeta');
+const btnOpen = document.getElementById('btnOpen');
+const btnDelete = document.getElementById('btnDelete');
+const btnAttach = document.getElementById('btnAttach');
+
+const fileImport = document.getElementById('fileImport');
+const btnExport = document.getElementById('btnExport');
+const btnBackup = document.getElementById('btnBackup');
+
+const metaFolder = document.getElementById('metaFolder');
+const countBadge = document.getElementById('countBadge');
+
+/* Helpers */
+function uid(){ return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function driveToViewable(url){ if(!url) return url; try{ if(url.includes('drive.google.com')){ const m = url.match(/[-\w]{25,}/); if(m && m[0]) return 'https://drive.google.com/uc?export=view&id=' + m[0]; } }catch(e){} return url; }
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const fr = new FileReader(); fr.onload = e=>res(e.target.result); fr.onerror=rej; fr.readAsDataURL(file); }); }
+function saveAsFile(blob,name){ if(window.saveAs){ window.saveAs(blob,name); } else { const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } }
+
+/* Auth UI */
+function showLoggedOut(){
+  userArea.innerHTML = `
+    <input id="emailIn" type="text" placeholder="Email" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#efe6d1" />
+    <input id="passIn" type="password" placeholder="Password" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:#efe6d1" />
+    <button id="btnLogin" class="btn ghost">Login</button>
+    <button id="btnSignup" class="btn">Signup</button>
+  `;
+  document.getElementById('btnLogin').addEventListener('click', async ()=>{
+    const email = document.getElementById('emailIn').value.trim();
+    const pass = document.getElementById('passIn').value;
+    if(!email||!pass) return alert('Enter email & password');
+    try{ await auth.signInWithEmailAndPassword(email, pass); } catch(err){ alert('Login failed: '+err.message); }
+  });
+  document.getElementById('btnSignup').addEventListener('click', async ()=>{
+    const email = document.getElementById('emailIn').value.trim();
+    const pass = document.getElementById('passIn').value;
+    if(!email||!pass) return alert('Enter email & password');
+    try{ await auth.createUserWithEmailAndPassword(email, pass); alert('Signup successful — you are logged in'); } catch(err){ alert('Signup failed: '+err.message); }
+  });
+}
+
+function showLoggedInUI(user){
+  userArea.innerHTML = `
+    <div style="text-align:right">
+      <div style="font-size:13px;color:#ffeeb3">${escapeHtml(user.email)}</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        <button id="btnSignout" class="btn ghost">Sign out</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnSignout').addEventListener('click', async ()=>{ await auth.signOut(); });
+}
+
+/* Auth listener */
+auth.onAuthStateChanged(async user => {
+  currentUser = user;
+  if(user){
+    showLoggedInUI(user);
+    connectedUser.textContent = user.email;
+    adminBadge.style.display = (user.email === ADMIN_EMAIL) ? 'inline-block' : 'none';
+    // load user folders + records
+    await ensureUserFoldersExist(user.uid);
+    await loadUserFolders();
+    await loadRecords();
+  } else {
+    showLoggedOut();
+    connectedUser.textContent = 'Not connected';
+    adminBadge.style.display = 'none';
+    folders = []; currentFolder = null; records = []; render();
+  }
+});
+
+/* Firestore structure:
+  Collection "propsData" stores records with fields:
+   - props, qty, props_rizer, rizer, rizer_qty, image_link, storagePath, folder, ownerUid, createdAt
+  Collection "users" has subcollection "folders" for folder names (per user)
+*/
+
+/* Ensure folder collection exists for user */
+async function ensureUserFoldersExist(uid){
+  const fcol = db.collection('users').doc(uid).collection('folders');
+  const snap = await fcol.limit(1).get();
+  if(snap.empty){
+    await fcol.add({ name: 'default', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  }
+}
+
+/* Load folders for current user */
+async function loadUserFolders(){
+  if(!currentUser) return;
+  const uid = currentUser.uid;
+  const snap = await db.collection('users').doc(uid).collection('folders').orderBy('createdAt','desc').get();
+  folders = snap.docs.map(d => d.data().name);
+  if(!folders.length) folders = ['default'];
+  currentFolder = localStorage.getItem('last_folder_'+uid) || folders[0];
+  refreshFolderUI();
+}
+
+/* Create folder */
+btnCreateFolder.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login required');
+  const name = newFolderInput.value.trim();
+  if(!name) return alert('Folder name required');
+  const uid = currentUser.uid;
+  const fcol = db.collection('users').doc(uid).collection('folders');
+  const exist = await fcol.where('name','==',name).get();
+  if(!exist.empty) return alert('Folder exists');
+  await fcol.add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  newFolderInput.value='';
+  await loadUserFolders();
+});
+
+/* Delete folder */
+btnDeleteFolder.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login required');
+  if(!currentFolder) return alert('Select folder');
+  if(!confirm('Delete folder "'+currentFolder+'" and all its records?')) return;
+  const uid = currentUser.uid;
+  // delete records in propsData where ownerUid==uid and folder==currentFolder
+  const recs = await db.collection(COLLECTION).where('ownerUid','==',uid).where('folder','==',currentFolder).get();
+  const batch = db.batch();
+  recs.forEach(doc=> batch.delete(db.collection(COLLECTION).doc(doc.id)));
+  await batch.commit();
+  // delete folder doc
+  const folderDocs = await db.collection('users').doc(uid).collection('folders').where('name','==',currentFolder).get();
+  folderDocs.forEach(d=> d.ref.delete());
+  await loadUserFolders();
+});
+
+/* refresh folder UI */
+function refreshFolderUI(){
+  folderSelect.innerHTML='';
+  folders.forEach(f=>{
+    const opt = document.createElement('option'); opt.value=f; opt.textContent=f; folderSelect.appendChild(opt);
+  });
+  if(currentFolder) folderSelect.value = currentFolder;
+  metaFolder.textContent = 'Folder: ' + (currentFolder||'—');
+}
+
+/* switch folder */
+folderSelect.addEventListener('change', async ()=> {
+  currentFolder = folderSelect.value;
+  if(currentUser) localStorage.setItem('last_folder_'+currentUser.uid, currentFolder);
+  await loadRecords();
+});
+
+/* load records (admin: sees all else only own) */
+async function loadRecords(){
+  if(!currentUser) return;
+  // if admin -> all records (optionally filtered by folder)
+  if(currentUser.email === ADMIN_EMAIL){
+    let q = db.collection(COLLECTION).orderBy('createdAt','desc').limit(500);
+    if(currentFolder) q = q.where('folder','==', currentFolder);
+    const snap = await q.get();
+    records = snap.docs.map(d => ({ id: d.id, uid: d.data().ownerUid, ...d.data() }));
+  } else {
+    let q = db.collection(COLLECTION).where('ownerUid','==', currentUser.uid).orderBy('createdAt','desc').limit(500);
+    if(currentFolder) q = q.where('folder','==', currentFolder);
+    const snap = await q.get();
+    records = snap.docs.map(d => ({ id: d.id, uid: currentUser.uid, ...d.data() }));
+  }
+  render();
+}
+
+/* Save record: upload image if provided, then add doc in propsData */
+btnSave.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login first');
+  if(!currentFolder) return alert('Select or create a folder');
+  const props = inpProps.value.trim(); if(!props) return alert('Enter PROPS');
+  const qty = inpQty.value ? Number(inpQty.value) : null;
+  let image_link = inpImageLink.value.trim() || null;
+  let storagePath = null;
+
+  if(fileImg.files && fileImg.files[0]){
+    const file = fileImg.files[0];
+    const path = `props_images/${currentUser.uid}/${currentFolder}/${Date.now()}_${file.name}`;
+    const ref = storage.ref(path);
+    const snap = await ref.put(file);
+    image_link = await snap.ref.getDownloadURL();
+    storagePath = path;
+  } else if(image_link){
+    image_link = driveToViewable(image_link);
+  }
+
+  const doc = {
+    props, qty, props_rizer: inpPropsRizer.value.trim(), rizer: inpRizer.value.trim(), rizer_qty: inpRizerQty.value ? Number(inpRizerQty.value) : null,
+    image_link: image_link || null, storagePath: storagePath || null, folder: currentFolder, ownerUid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  await db.collection(COLLECTION).add(doc);
+  clearForm();
+  await loadRecords();
+});
+
+/* Update record (owner only) */
+btnUpdate.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login required');
+  if(!editingId) return alert('No record selected');
+  const rec = records.find(r=>r.id===editingId);
+  if(!rec) return alert('Record not found');
+  if(rec.ownerUid !== currentUser.uid) return alert('You can edit only your records');
+
+  const props = inpProps.value.trim(); if(!props) return alert('Enter PROPS');
+  const qty = inpQty.value ? Number(inpQty.value) : null;
+  let image_link = inpImageLink.value.trim() || null;
+  let storagePath = rec.storagePath || null;
+
+  if(fileImg.files && fileImg.files[0]){
+    const file = fileImg.files[0];
+    const path = `props_images/${currentUser.uid}/${currentFolder}/${Date.now()}_${file.name}`;
+    const ref = storage.ref(path);
+    const snap = await ref.put(file);
+    image_link = await snap.ref.getDownloadURL();
+    storagePath = path;
+  } else if(image_link){
+    image_link = driveToViewable(image_link);
+  }
+
+  const updateObj = {
+    props, qty, props_rizer: inpPropsRizer.value.trim(), rizer: inpRizer.value.trim(), rizer_qty: inpRizerQty.value ? Number(inpRizerQty.value) : null,
+    image_link: image_link || null, storagePath: storagePath || null, folder: currentFolder, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  await db.collection(COLLECTION).doc(editingId).update(updateObj);
+  clearForm();
+  await loadRecords();
+});
+
+/* Delete record: Admin only (any user's record). Function to delete doc and storage file if exists */
+async function deleteRecordGlobal(uid, recordId){
+  const docRef = db.collection(COLLECTION).doc(recordId);
+  const doc = await docRef.get();
+  if(!doc.exists) return;
+  const data = doc.data();
+  if(data.storagePath){
+    try{ await storage.ref(data.storagePath).delete(); } catch(e){ console.warn('Storage delete failed', e); }
+  }
+  await docRef.delete();
+}
+
+/* Delete button (admin only) */
+btnDelete.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login first');
+  if(currentUser.email !== ADMIN_EMAIL) return alert('Only admin can delete');
+  if(!editingId) return alert('Select a record first');
+  const rec = records.find(r=>r.id===editingId);
+  if(!rec) return alert('Record not found');
+  if(!confirm('Admin: delete this record?')) return;
+  await deleteRecordGlobal(rec.ownerUid, rec.id);
+  await loadRecords();
+});
+
+/* Attach image to selected record (owner only) */
+btnAttach.addEventListener('click', ()=> {
+  if(!currentUser) return alert('Login first');
+  if(!editingId) return alert('Select a record first');
+  fileImg.click();
+  fileImg.onchange = async ()=> {
+    const f = fileImg.files[0]; if(!f) return;
+    const path = `props_images/${currentUser.uid}/${currentFolder}/${Date.now()}_${f.name}`;
+    const ref = storage.ref(path);
+    const snap = await ref.put(f);
+    const url = await snap.ref.getDownloadURL();
+    const rec = records.find(r=>r.id===editingId);
+    if(!rec) return alert('Record not found');
+    if(rec.ownerUid !== currentUser.uid) return alert('Only owner can attach image');
+    await db.collection(COLLECTION).doc(editingId).update({ image_link: url, storagePath: path, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    fileImg.value='';
+    await loadRecords();
+  };
+});
+
+/* Select record to edit/view (owner or admin) */
+window.onSelect = async function(uid, id, ev){
+  if(ev) ev.stopPropagation();
+  editingId = id;
+  const doc = await db.collection(COLLECTION).doc(id).get();
+  if(!doc.exists) return alert('Record not found');
+  const r = doc.data();
+  inpProps.value = r.props || '';
+  inpQty.value = r.qty || '';
+  inpPropsRizer.value = r.props_rizer || '';
+  inpRizer.value = r.rizer || '';
+  inpRizerQty.value = r.rizer_qty || '';
+  inpImageLink.value = r.image_link || '';
+  if(r.image_link){ imgPreview.src = r.image_link; imgPreview.style.display='block'; } else { imgPreview.style.display='none'; }
+  btnSave.style.display='none'; btnUpdate.style.display='inline-block'; btnCancel.style.display='inline-block';
+  selMeta.textContent = 'Selected: ' + (r.props || '(no props)');
+  btnDelete.style.display = (currentUser && currentUser.email === ADMIN_EMAIL) ? 'inline-block' : 'none';
+};
+
+/* Render list table */
+function render(){
+  tableBody.innerHTML = '';
+  metaFolder.textContent = 'Folder: ' + (currentFolder || '—');
+  if(!records || !records.length){
+    tableBody.innerHTML = '<tr><td colspan="7" class="small">No records</td></tr>'; return;
+  }
+  const q = (search.value||'').toLowerCase();
+  const mode = filterMode.value;
+  let filtered = records.filter(r=> {
+    if(mode==='withImage' && !r.image_link) return false;
+    if(mode==='withoutImage' && r.image_link) return false;
+    if(!q) return true;
+    return ((r.props||'').toLowerCase().includes(q) || (r.props_rizer||'').toLowerCase().includes(q) || (r.rizer||'').toLowerCase().includes(q));
+  });
+  filtered.forEach((r, i) => {
+    const tdImg = r.image_link ? `<span style="color:#ffd77a">Yes</span>` : '';
+    const ownerTag = (currentUser && currentUser.email === ADMIN_EMAIL) ? `<div style="font-size:12px;color:#c7b58a">owner: ${r.ownerUid}</div>` : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td>
+      <td>${escapeHtml(r.props||'')}</td>
+      <td>${escapeHtml(String(r.qty||''))}</td>
+      <td>${escapeHtml(r.props_rizer||'')}</td>
+      <td>${escapeHtml(String(r.rizer_qty||''))}</td>
+      <td>${tdImg}</td>
+      <td>
+        <div class="actions">
+          <button class="btn ghost" onclick="onEditClick('${r.ownerUid}','${r.id}', event)">Edit</button>
+          ${ currentUser && currentUser.email === ADMIN_EMAIL ? `<button class="btn ghost" onclick="onAdminDelete('${r.ownerUid}','${r.id}', event)">Delete</button>` : '' }
+          <button class="btn ghost" onclick="onSelect('${r.ownerUid}','${r.id}', event)">Select</button>
+        </div>
+        ${ownerTag}
+      </td>`;
+    tableBody.appendChild(tr);
+  });
+}
+
+/* table action helpers */
+window.onEditClick = async function(uid, id, ev){
+  ev.stopPropagation();
+  if(!currentUser) return alert('Login required');
+  if(uid !== currentUser.uid) return alert('You can only edit your own records');
+  onSelect(uid, id, ev);
+};
+
+window.onAdminDelete = async function(uid, id, ev){
+  ev.stopPropagation();
+  if(!currentUser || currentUser.email !== ADMIN_EMAIL) return alert('Only admin can delete');
+  if(!confirm('Admin: delete this record?')) return;
+  await deleteRecordGlobal(uid, id);
+  await loadRecords();
+};
+
+/* search/filter listeners */
+search.addEventListener('input', render);
+filterMode.addEventListener('change', render);
+
+/* import/export */
+fileImport.addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const name = f.name.toLowerCase(); const reader = new FileReader();
+  reader.onload = async function(ev){
+    if(name.endsWith('.csv')) parseCSV(ev.target.result);
+    else {
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+      if(!currentUser) return alert('Login required to import');
+      for(const r of rows){
+        const doc = { props: r.PROPS || r.props || '', qty: r.QTY || r.qty || null, props_rizer: r['PROPS RIZER'] || r.props_rizer || '', rizer: r.RIZER || r.rizer || '', rizer_qty: r.RIZER_QTY || r.rizer_qty || null, image_link: r.IMAGE_LINK ? driveToViewable(r.IMAGE_LINK) : null, folder: currentFolder || 'default', ownerUid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await db.collection(COLLECTION).add(doc);
+      }
+      alert('Import complete'); await loadRecords();
+    }
+  };
+  if(name.endsWith('.csv')) reader.readAsText(f); else reader.readAsArrayBuffer(f);
+});
+
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const header = lines[0].split(',').map(h=>h.trim().toLowerCase());
+  const start = header.includes('props') ? 1 : 0;
+  const dataRows = lines.slice(start);
+  (async ()=>{
+    if(!currentUser) return alert('Login required to import');
+    for(const line of dataRows){
+      const cols = line.split(',');
+      const doc = { props: cols[0]||'', qty: cols[1]||null, props_rizer: cols[2]||'', rizer: cols[3]||'', rizer_qty: cols[4]||null, image_link: cols[5] ? driveToViewable(cols[5]) : null, folder: currentFolder || 'default', ownerUid: currentUser.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+      await db.collection(COLLECTION).add(doc);
+    }
+    alert('CSV import done'); await loadRecords();
+  })();
+}
+
+/* backup/export */
+btnBackup.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login required');
+  const snap = await db.collection(COLLECTION).where('ownerUid','==',currentUser.uid).get();
+  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const blob = new Blob([JSON.stringify(all,null,2)], {type:'application/json'});
+  saveAsFile(blob, `backup_${currentUser.uid}_${Date.now()}.json`);
+});
+
+btnExport.addEventListener('click', async ()=>{
+  if(!currentUser) return alert('Login required');
+  const snap = await db.collection(COLLECTION).where('ownerUid','==',currentUser.uid).get();
+  const rows = snap.docs.map(d => {
+    const r = d.data();
+    return { PROPS: r.props||'', QTY: r.qty||'', 'PROPS RIZER': r.props_rizer||'', RIZER: r.rizer||'', RIZER_QTY: r.rizer_qty||'', IMAGE_LINK: r.image_link||'' };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'props');
+  const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  saveAsFile(new Blob([wbout],{type:'application/octet-stream'}), `export_${currentUser.uid}_${Date.now()}.xlsx`);
+});
+
+/* misc helpers */
+function clearForm(){ editingId = null; inpProps.value=''; inpQty.value=''; inpPropsRizer.value=''; inpRizer.value=''; inpRizerQty.value=''; inpImageLink.value=''; fileImg.value=''; btnSave.style.display='inline-block'; btnUpdate.style.display='none'; btnCancel.style.display='none'; selMeta.textContent='Selected: None'; imgPreview.src = '/mnt/data/4bcf8ca1-2893-4bf4-ab17-d4ef909276bc.png'; imgPreview.style.display='block'; }
+
+/* init minimal (no seed) */
+(function init(){
+  // nothing to seed; wait for login
+})();
+</script>
+</body>
+</html>
